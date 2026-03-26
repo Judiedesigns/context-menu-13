@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testimonial Marquee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #E8332A;
+      --bg: #F0EFEA;
+      --card: #FFFFFF;
+      --text-primary: #111110;
+      --text-secondary: #6B6B6B;
+      --border: rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 72px 0;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ── */
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: clamp(40px, 5vw, 64px);
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      text-align: center;
+      color: var(--text-primary);
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 60px;
+      line-height: 1.6;
+    }
+
+    /* ── Marquee ── */
+    .marquee-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+
+    .marquee-row {
+      display: flex;
+      width: 100%;
+      overflow: hidden;
+      mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+    }
+
+    .marquee-track {
+      display: flex;
+      gap: 18px;
+      width: max-content;
+      will-change: transform;
+    }
+
+    .row-left  .marquee-track { animation: scroll-left  45s linear infinite; }
+    .row-right .marquee-track { animation: scroll-right 45s linear infinite; }
+
+    .marquee-row:hover .marquee-track { animation-play-state: paused; }
+
+    @keyframes scroll-left  { from { transform: translateX(0); }    to { transform: translateX(-50%); } }
+    @keyframes scroll-right { from { transform: translateX(-50%); } to { transform: translateX(0); }    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .marquee-track { animation: none !important; }
+    }
+
+    /* ── Card ── */
+    .card {
+      flex-shrink: 0;
+      width: 400px;
+      min-height: 220px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: default;
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 28px rgba(0,0,0,0.10);
+      transform: translateY(-3px);
+    }
+
+    /* Quote headline */
+    .card-quote {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 30px;
+      letter-spacing: 0.03em;
+      line-height: 1.05;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+    }
+
+    .card-quote .q {
+      color: var(--red);
+    }
+
+    /* Body */
+    .card-body {
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--text-secondary);
+      flex: 1;
+      margin-bottom: 24px;
+    }
+
+    /* Divider */
+    .card-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 20px;
+    }
+
+    /* Author */
+    .card-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #E8E8E4;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .avatar-wrap svg {
+      width: 38px;
+      height: 38px;
+    }
+
+    .author-name {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.06em;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+
+    .author-role {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <p class="eyebrow">Testimonials</p>
+  <h2>What People Are Saying</h2>
+  <p class="subtitle">Trusted by thousands of teams, builders, and creators worldwide.</p>
+
+  <div class="marquee-section">
+    <div class="marquee-row row-left">
+      <div class="marquee-track" id="track-left"></div>
+    </div>
+    <div class="marquee-row row-right">
+      <div class="marquee-track" id="track-right"></div>
+    </div>
+  </div>
+
+  <script>
+    // Simple SVG face illustrations (black & white line art style)
+    const avatars = {
+      watson: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
+        <circle cx="16.5" cy="13" r="1.2" fill="#111"/>
+        <circle cx="21.5" cy="13" r="1.2" fill="#111"/>
+        <path d="M16 16.5 Q19 19 22 16.5" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        <path d="M14 11 Q15 8 19 8 Q23 8 24 11" stroke="#111" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+        <path d="M11 38 Q11 26 19 26 Q27 26 27 38" fill="#111" opacity="0.15"/>
+        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
+        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="none"/>
+      </svg>`,
+
+      elliot: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
+        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
+        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
+        <path d="M16 16 Q19 18.5 22 16" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        <path d="M11 10 Q13 5 19 6 Q24 6 25 9" stroke="#111" stroke-width="1.5" fill="#111" opacity="0.9" stroke-linecap="round"/>
+        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
+      </svg>`,
+
+      kamala: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
+        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
+        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
+        <path d="M16.5 16.5 Q19 18.5 21.5 16.5" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        <path d="M11 12 Q10 6 19 6 Q28 6 27 12" stroke="#111" stroke-width="1.4" stroke-linecap="round" fill="#111" opacity="0.85"/>
+        <path d="M25 10 Q30 10 27 16" stroke="#111" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
+      </svg>`,
+
+      marcus: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
+        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
+        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
+        <path d="M16 16 Q19 19 22 16" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        <path d="M13 11 Q13 7 19 7 Q25 7 25 11" stroke="#111" stroke-width="1.8" fill="#111" opacity="0.9"/>
+        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
+      </svg>`,
+
+      priya: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
+        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
+        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
+        <path d="M16.5 16.5 Q19 18.5 21.5 16.5" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        <path d="M11 10 Q12 4 19 5 Q26 4 27 10" fill="#111" opacity="0.8"/>
+        <path d="M11 10 Q12 4 19 5 Q26 4 27 10" stroke="#111" stroke-width="1.3" fill="none"/>
+        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
+      </svg>`,
+
+      james: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
+        <rect x="15" y="12.5" width="3" height="1.8" rx="0.5" fill="#111"/>
+        <rect x="20" y="12.5" width="3" height="1.8" rx="0.5" fill="#111"/>
+        <path d="M14.5" stroke="#111" stroke-width="1"/>
+        <path d="M16 16 Q19 18.5 22 16" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        <rect x="14" y="11" width="10" height="2.5" rx="1.2" fill="#111" opacity="0.15" stroke="#111" stroke-width="1.2"/>
+        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
+      </svg>`,
+
+      leo: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
+        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
+        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
+        <path d="M16 17 Q19 19.5 22 17" stroke="#111" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        <path d="M11 11 Q12 6 19 6 Q26 6 27 11" fill="#111" opacity="0.7"/>
+        <path d="M27 11 Q30 9 28 14" stroke="#111" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
+      </svg>`,
+
+      amara: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
+        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
+        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
+        <path d="M16.5 16.5 Q19 19 21.5 16.5" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        <path d="M11 9 Q13 4 19 4 Q25 4 27 9 L27 6 Q24 2 19 2 Q14 2 11 6 Z" fill="#111" opacity="0.8"/>
+        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
+      </svg>`,
+    };
+
+    const testimonials = [
+      {
+        headline: '"Site of the Year"',
+        body: "They truly deserve the crown — my site of the year, no doubt. Nothing else comes close to this experience.",
+        name: "Watson",
+        role: "Sr. Motion Graphic, USA.",
+        avatar: "watson"
+      },
+      {
+        headline: '"Best Event Site!"',
+        body: "Hands down the best event site I've ever experienced. Every detail was perfectly considered.",
+        name: "Elliot",
+        role: "Software Engineer, Australia.",
+        avatar: "elliot"
+      },
+      {
+        headline: '"Dream Come True"',
+        body: "Truly a dream come true — so much value packed into one experience. I keep coming back.",
+        name: "Kamala",
+        role: "Product Designer, Indonesia.",
+        avatar: "kamala"
+      },
+      {
+        headline: '"Absolutely Brilliant"',
+        body: "I evaluated dozens of tools before landing here. The craft and care put into this is unmatched.",
+        name: "Marcus",
+        role: "Senior Engineer, Canada.",
+        avatar: "marcus"
+      },
+      {
+        headline: '"Changed Everything"',
+        body: "Before this, our workflow was a mess. Now it's seamless. Best decision our team made this year.",
+        name: "Priya",
+        role: "CTO, Sequence.",
+        avatar: "priya"
+      },
+      {
+        headline: '"Wildly Impressive"',
+        body: "The quality speaks for itself the moment you land on the page. Our clients noticed immediately.",
+        name: "James",
+        role: "Creative Director, UK.",
+        avatar: "james"
+      },
+      {
+        headline: '"Highly Recommend"',
+        body: "I've recommended this to every founder I advise. Rare to find something that delivers this well.",
+        name: "Leo",
+        role: "Partner, a16z.",
+        avatar: "leo"
+      },
+      {
+        headline: '"Nothing Like It"',
+        body: "We've tried everything on the market. This is in a different league entirely — the attention to detail is just *chef's kiss*.",
+        name: "Amara",
+        role: "VP Engineering, Notion.",
+        avatar: "amara"
+      },
+    ];
+
+    function buildCard(t) {
+      return `
+        <div class="card">
+          <div>
+            <div class="card-quote"><span class="q">"</span>${t.headline.replace(/^[\u201c"]/,'').replace(/[\u201d"]$/,'')}<span class="q">"</span></div>
+            <p class="card-body">${t.body}</p>
+          </div>
+          <div>
+            <div class="card-divider"></div>
+            <div class="card-author">
+              <div class="avatar-wrap">${avatars[t.avatar]}</div>
+              <div>
+                <p class="author-name">${t.name}</p>
+                <p class="author-role">${t.role}</p>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function fillTrack(id, items) {
+      const el = document.getElementById(id);
+      el.innerHTML = [...items, ...items].map(buildCard).join('');
+    }
+
+    fillTrack('track-left',  testimonials);
+    fillTrack('track-right', [...testimonials].reverse());
+  </script>
+
+</body>
+</html>
