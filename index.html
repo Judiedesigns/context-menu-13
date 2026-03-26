@@ -3,375 +3,561 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Testimonial Marquee</title>
+  <title>Context Menu</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --red: #E8332A;
-      --bg: #F0EFEA;
-      --card: #FFFFFF;
-      --text-primary: #111110;
-      --text-secondary: #6B6B6B;
-      --border: rgba(0,0,0,0.08);
-    }
-
     body {
-      font-family: "Inter", system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text-primary);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
       min-height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 72px 0;
-      overflow-x: hidden;
-    }
-
-    /* ── Header ── */
-    .eyebrow {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--red);
-      margin-bottom: 14px;
-    }
-
-    h2 {
-      font-family: "Bebas Neue", sans-serif;
-      font-size: clamp(40px, 5vw, 64px);
-      font-weight: 400;
-      letter-spacing: 0.02em;
-      text-align: center;
-      color: var(--text-primary);
-      line-height: 1;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      font-size: 15px;
-      color: var(--text-secondary);
-      text-align: center;
-      margin-bottom: 60px;
-      line-height: 1.6;
-    }
-
-    /* ── Marquee ── */
-    .marquee-section {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 40px;
-    }
-
-    .marquee-row {
-      display: flex;
-      width: 100%;
+      user-select: none;
       overflow: hidden;
-      mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+      background: #0a1a6e;
     }
 
-    .marquee-track {
-      display: flex;
-      gap: 18px;
-      width: max-content;
-      will-change: transform;
+    /* ── Shader canvas background ── */
+    #shader-bg {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      display: block;
     }
 
-    .row-left  .marquee-track { animation: scroll-left  45s linear infinite; }
-    .row-right .marquee-track { animation: scroll-right 45s linear infinite; }
+    /* ── Hint ── */
+    .hint {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      pointer-events: none;
+    }
+    .hint p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.01em;
+    }
 
-    .marquee-row:hover .marquee-track { animation-play-state: paused; }
+    /* ── Menu shell — Apple dark glass ── */
+    .ctx-menu {
+      position: fixed;
+      z-index: 100;
+      /* Dark tint: lets background bleed through with color */
+      background: rgba(28, 28, 32, 0.68);
+      backdrop-filter: blur(48px) saturate(180%) brightness(90%);
+      -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(90%);
+      /* Subtle light border — top edge brighter = glass shimmer */
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 6px;
+      min-width: 240px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 0 0 0.5px rgba(0, 0, 0, 0.45),
+        0 8px 28px rgba(0, 0, 0, 0.45),
+        0 24px 60px rgba(0, 0, 0, 0.35);
+      outline: none;
+      animation: menu-in 0.18s cubic-bezier(0.2, 0, 0, 1.1) forwards;
+    }
 
-    @keyframes scroll-left  { from { transform: translateX(0); }    to { transform: translateX(-50%); } }
-    @keyframes scroll-right { from { transform: translateX(-50%); } to { transform: translateX(0); }    }
+    @keyframes menu-in {
+      from { opacity: 0; transform: scale(0.92) translateY(-6px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0); }
+    }
 
     @media (prefers-reduced-motion: reduce) {
-      .marquee-track { animation: none !important; }
+      .ctx-menu { animation: none; }
     }
 
-    /* ── Card ── */
-    .card {
-      flex-shrink: 0;
-      width: 400px;
-      min-height: 220px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 32px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      cursor: default;
-      transition: box-shadow 0.25s ease, transform 0.25s ease;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-
-    .card:hover {
-      box-shadow: 0 8px 28px rgba(0,0,0,0.10);
-      transform: translateY(-3px);
-    }
-
-    /* Quote headline */
-    .card-quote {
-      font-family: "Bebas Neue", sans-serif;
-      font-size: 30px;
-      letter-spacing: 0.03em;
-      line-height: 1.05;
-      color: var(--text-primary);
-      margin-bottom: 14px;
-    }
-
-    .card-quote .q {
-      color: var(--red);
-    }
-
-    /* Body */
-    .card-body {
-      font-size: 14px;
-      line-height: 1.65;
-      color: var(--text-secondary);
-      flex: 1;
-      margin-bottom: 24px;
-    }
-
-    /* Divider */
-    .card-divider {
-      width: 100%;
+    /* ── Separator ── */
+    .ctx-separator {
       height: 1px;
-      background: var(--border);
-      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.10);
+      margin: 4px 0;
     }
 
-    /* Author */
-    .card-author {
+    /* ── Item ── */
+    .ctx-item {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 11px;
+      padding: 9px 11px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.92);
+      cursor: default;
+      position: relative;
+      transition: background 0.1s ease;
+      outline: none;
     }
 
-    .avatar-wrap {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      overflow: hidden;
-      background: #E8E8E4;
+    .ctx-item:hover,
+    .ctx-item.focused {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    /* Keyboard-focused gets a stronger ring so it's distinguishable */
+    .ctx-item.focused {
+      background: rgba(255, 255, 255, 0.14);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+    }
+
+    .ctx-item.selected {
+      background: #0A84FF;
+      color: #fff;
+    }
+
+    .ctx-item.danger { color: #ff6961; }
+    .ctx-item.danger:hover,
+    .ctx-item.danger.focused {
+      background: rgba(255, 59, 48, 0.22);
+      color: #ff6961;
+    }
+
+    .ctx-item.disabled { opacity: 0.3; pointer-events: none; }
+
+    /* Icon */
+    .ctx-icon {
+      width: 18px;
+      height: 18px;
       flex-shrink: 0;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
+      color: rgba(255, 255, 255, 0.70);
     }
 
-    .avatar-wrap svg {
-      width: 38px;
-      height: 38px;
+    .ctx-item:hover .ctx-icon,
+    .ctx-item.focused .ctx-icon { color: rgba(255, 255, 255, 0.90); }
+    .ctx-item.danger .ctx-icon   { color: #ff6961; }
+
+    /* Label */
+    .ctx-label { flex: 1; letter-spacing: -0.01em; }
+
+    /* Shortcut — white on dark glass: rgba(255,255,255,0.55) ≈ 6:1 on dark bg ✓ */
+    .ctx-shortcut {
+      font-size: 12.5px;
+      color: rgba(255, 255, 255, 0.45);
+      letter-spacing: 0.02em;
     }
 
-    .author-name {
-      font-family: "Bebas Neue", sans-serif;
-      font-size: 16px;
-      letter-spacing: 0.06em;
-      color: var(--text-primary);
-      line-height: 1.1;
+    .ctx-item:hover .ctx-shortcut,
+    .ctx-item.focused .ctx-shortcut { color: rgba(255, 255, 255, 0.65); }
+    .ctx-item.danger .ctx-shortcut  { color: #ff6961; opacity: 0.7; }
+
+    /* Chevron */
+    .ctx-chevron {
+      width: 14px;
+      height: 14px;
+      color: rgba(255, 255, 255, 0.35);
+      flex-shrink: 0;
     }
 
-    .author-role {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-top: 3px;
-      line-height: 1.4;
+    .ctx-item:hover .ctx-chevron,
+    .ctx-item.focused .ctx-chevron { color: rgba(255, 255, 255, 0.75); }
+
+    /* ── Submenu ── */
+    .ctx-submenu-wrap {
+      position: absolute;
+      top: -6px;
+      left: calc(100% + 8px);
+      display: none;
+      pointer-events: none;
+    }
+
+    .ctx-item:hover > .ctx-submenu-wrap,
+    .ctx-item.focused > .ctx-submenu-wrap,
+    .ctx-item.submenu-open > .ctx-submenu-wrap {
+      display: block;
+      pointer-events: all;
+    }
+
+    .ctx-submenu-wrap.flip-x {
+      left: auto;
+      right: calc(100% + 8px);
+    }
+
+    .ctx-submenu-wrap.flip-y {
+      top: auto;
+      bottom: -6px;
     }
   </style>
 </head>
 <body>
 
-  <p class="eyebrow">Testimonials</p>
-  <h2>What People Are Saying</h2>
-  <p class="subtitle">Trusted by thousands of teams, builders, and creators worldwide.</p>
-
-  <div class="marquee-section">
-    <div class="marquee-row row-left">
-      <div class="marquee-track" id="track-left"></div>
-    </div>
-    <div class="marquee-row row-right">
-      <div class="marquee-track" id="track-right"></div>
-    </div>
-  </div>
+  <canvas id="shader-bg"></canvas>
+  <div class="hint"><p>Right-click anywhere to open the menu</p></div>
 
   <script>
-    // Simple SVG face illustrations (black & white line art style)
-    const avatars = {
-      watson: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
-        <circle cx="16.5" cy="13" r="1.2" fill="#111"/>
-        <circle cx="21.5" cy="13" r="1.2" fill="#111"/>
-        <path d="M16 16.5 Q19 19 22 16.5" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-        <path d="M14 11 Q15 8 19 8 Q23 8 24 11" stroke="#111" stroke-width="1.3" stroke-linecap="round" fill="none"/>
-        <path d="M11 38 Q11 26 19 26 Q27 26 27 38" fill="#111" opacity="0.15"/>
-        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
-        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="none"/>
-      </svg>`,
+    const CHEVRON_SVG = `<svg class="ctx-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
 
-      elliot: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
-        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
-        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
-        <path d="M16 16 Q19 18.5 22 16" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-        <path d="M11 10 Q13 5 19 6 Q24 6 25 9" stroke="#111" stroke-width="1.5" fill="#111" opacity="0.9" stroke-linecap="round"/>
-        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
-      </svg>`,
-
-      kamala: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
-        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
-        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
-        <path d="M16.5 16.5 Q19 18.5 21.5 16.5" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-        <path d="M11 12 Q10 6 19 6 Q28 6 27 12" stroke="#111" stroke-width="1.4" stroke-linecap="round" fill="#111" opacity="0.85"/>
-        <path d="M25 10 Q30 10 27 16" stroke="#111" stroke-width="1.3" stroke-linecap="round" fill="none"/>
-        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
-      </svg>`,
-
-      marcus: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
-        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
-        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
-        <path d="M16 16 Q19 19 22 16" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-        <path d="M13 11 Q13 7 19 7 Q25 7 25 11" stroke="#111" stroke-width="1.8" fill="#111" opacity="0.9"/>
-        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
-      </svg>`,
-
-      priya: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
-        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
-        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
-        <path d="M16.5 16.5 Q19 18.5 21.5 16.5" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-        <path d="M11 10 Q12 4 19 5 Q26 4 27 10" fill="#111" opacity="0.8"/>
-        <path d="M11 10 Q12 4 19 5 Q26 4 27 10" stroke="#111" stroke-width="1.3" fill="none"/>
-        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
-      </svg>`,
-
-      james: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
-        <rect x="15" y="12.5" width="3" height="1.8" rx="0.5" fill="#111"/>
-        <rect x="20" y="12.5" width="3" height="1.8" rx="0.5" fill="#111"/>
-        <path d="M14.5" stroke="#111" stroke-width="1"/>
-        <path d="M16 16 Q19 18.5 22 16" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-        <rect x="14" y="11" width="10" height="2.5" rx="1.2" fill="#111" opacity="0.15" stroke="#111" stroke-width="1.2"/>
-        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
-      </svg>`,
-
-      leo: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
-        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
-        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
-        <path d="M16 17 Q19 19.5 22 17" stroke="#111" stroke-width="1.4" stroke-linecap="round" fill="none"/>
-        <path d="M11 11 Q12 6 19 6 Q26 6 27 11" fill="#111" opacity="0.7"/>
-        <path d="M27 11 Q30 9 28 14" stroke="#111" stroke-width="1.3" stroke-linecap="round" fill="none"/>
-        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
-      </svg>`,
-
-      amara: `<svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="19" cy="14" r="8" stroke="#111" stroke-width="1.5" fill="#fff"/>
-        <circle cx="16.5" cy="13.5" r="1.2" fill="#111"/>
-        <circle cx="21.5" cy="13.5" r="1.2" fill="#111"/>
-        <path d="M16.5 16.5 Q19 19 21.5 16.5" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-        <path d="M11 9 Q13 4 19 4 Q25 4 27 9 L27 6 Q24 2 19 2 Q14 2 11 6 Z" fill="#111" opacity="0.8"/>
-        <path d="M12 38 Q12 27 19 27 Q26 27 26 38" stroke="#111" stroke-width="1.5" fill="none"/>
-      </svg>`,
+    const ICONS = {
+      open:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
+      new:      `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+      edit:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+      share:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`,
+      rename:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 16.5-16.5z"/></svg>`,
+      info:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+      trash:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>`,
+      file:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+      folder:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>`,
+      window:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>`,
+      cut:      `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="20" r="3"/><circle cx="6" cy="4" r="3"/><line x1="6" y1="7" x2="6" y2="17"/><line x1="6" y1="7" x2="21" y2="22"/><line x1="21" y1="2" x2="9" y2="14"/></svg>`,
+      copy:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>`,
+      paste:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>`,
+      selectall:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>`,
+      link:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`,
+      pdf:      `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`,
+      mail:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
     };
 
-    const testimonials = [
+    const MENU = [
+      { id: 'open',   label: 'Open',   shortcut: '↵',   icon: 'open'   },
+      { type: 'separator' },
       {
-        headline: '"Site of the Year"',
-        body: "They truly deserve the crown — my site of the year, no doubt. Nothing else comes close to this experience.",
-        name: "Watson",
-        role: "Sr. Motion Graphic, USA.",
-        avatar: "watson"
+        id: 'new', label: 'New', icon: 'new',
+        children: [
+          { id: 'new-file',   label: 'New File',   shortcut: '⌘N',   icon: 'file'   },
+          { id: 'new-folder', label: 'New Folder', shortcut: '⌘⇧N', icon: 'folder' },
+          { id: 'new-window', label: 'New Window', shortcut: '⌘⇧W', icon: 'window' },
+        ]
       },
       {
-        headline: '"Best Event Site!"',
-        body: "Hands down the best event site I've ever experienced. Every detail was perfectly considered.",
-        name: "Elliot",
-        role: "Software Engineer, Australia.",
-        avatar: "elliot"
+        id: 'edit', label: 'Edit', icon: 'edit',
+        children: [
+          { id: 'cut',        label: 'Cut',        shortcut: '⌘X', icon: 'cut'       },
+          { id: 'copy',       label: 'Copy',       shortcut: '⌘C', icon: 'copy'      },
+          { id: 'paste',      label: 'Paste',      shortcut: '⌘V', icon: 'paste'     },
+          { type: 'separator' },
+          { id: 'select-all', label: 'Select All', shortcut: '⌘A', icon: 'selectall' },
+        ]
       },
       {
-        headline: '"Dream Come True"',
-        body: "Truly a dream come true — so much value packed into one experience. I keep coming back.",
-        name: "Kamala",
-        role: "Product Designer, Indonesia.",
-        avatar: "kamala"
+        id: 'share', label: 'Share', icon: 'share',
+        children: [
+          { id: 'copy-link',   label: 'Copy Link',       shortcut: '⌘L', icon: 'link' },
+          { id: 'export-pdf',  label: 'Export as PDF',                   icon: 'pdf'  },
+          { id: 'send-email',  label: 'Send via Email',                  icon: 'mail' },
+        ]
       },
-      {
-        headline: '"Absolutely Brilliant"',
-        body: "I evaluated dozens of tools before landing here. The craft and care put into this is unmatched.",
-        name: "Marcus",
-        role: "Senior Engineer, Canada.",
-        avatar: "marcus"
-      },
-      {
-        headline: '"Changed Everything"',
-        body: "Before this, our workflow was a mess. Now it's seamless. Best decision our team made this year.",
-        name: "Priya",
-        role: "CTO, Sequence.",
-        avatar: "priya"
-      },
-      {
-        headline: '"Wildly Impressive"',
-        body: "The quality speaks for itself the moment you land on the page. Our clients noticed immediately.",
-        name: "James",
-        role: "Creative Director, UK.",
-        avatar: "james"
-      },
-      {
-        headline: '"Highly Recommend"',
-        body: "I've recommended this to every founder I advise. Rare to find something that delivers this well.",
-        name: "Leo",
-        role: "Partner, a16z.",
-        avatar: "leo"
-      },
-      {
-        headline: '"Nothing Like It"',
-        body: "We've tried everything on the market. This is in a different league entirely — the attention to detail is just *chef's kiss*.",
-        name: "Amara",
-        role: "VP Engineering, Notion.",
-        avatar: "amara"
-      },
+      { type: 'separator' },
+      { id: 'rename', label: 'Rename',   shortcut: '↵',  icon: 'rename' },
+      { id: 'info',   label: 'Get Info', shortcut: '⌘I', icon: 'info'   },
+      { type: 'separator' },
+      { id: 'delete', label: 'Move to Trash', shortcut: '⌘⌫', icon: 'trash', danger: true },
     ];
 
-    function buildCard(t) {
-      return `
-        <div class="card">
-          <div>
-            <div class="card-quote"><span class="q">"</span>${t.headline.replace(/^[\u201c"]/,'').replace(/[\u201d"]$/,'')}<span class="q">"</span></div>
-            <p class="card-body">${t.body}</p>
-          </div>
-          <div>
-            <div class="card-divider"></div>
-            <div class="card-author">
-              <div class="avatar-wrap">${avatars[t.avatar]}</div>
-              <div>
-                <p class="author-name">${t.name}</p>
-                <p class="author-role">${t.role}</p>
-              </div>
-            </div>
-          </div>
-        </div>`;
+    // ── Build ────────────────────────────────────────────────────────────
+    function buildMenu(items, label = 'Context menu') {
+      const menu = document.createElement('div');
+      menu.className = 'ctx-menu';
+      menu.setAttribute('role', 'menu');
+      menu.setAttribute('aria-label', label);
+      menu.tabIndex = -1;
+
+      const focusable = [];
+
+      items.forEach(item => {
+        if (item.type === 'separator') {
+          const s = document.createElement('div');
+          s.className = 'ctx-separator';
+          s.setAttribute('role', 'separator');          // ✅ WCAG 4.1.2
+          s.setAttribute('aria-orientation', 'horizontal');
+          menu.appendChild(s);
+          return;
+        }
+
+        const el = document.createElement('div');
+        el.className = 'ctx-item' + (item.danger ? ' danger' : '') + (item.disabled ? ' disabled' : '');
+        el.setAttribute('role', item.children ? 'menuitem' : 'menuitem');
+        el.setAttribute('aria-label', item.label + (item.shortcut ? `, shortcut ${item.shortcut}` : ''));
+        if (item.children) {
+          el.setAttribute('aria-haspopup', 'menu');     // ✅ WCAG 4.1.2
+          el.setAttribute('aria-expanded', 'false');
+        }
+        if (item.disabled) el.setAttribute('aria-disabled', 'true');
+        el.tabIndex = -1;
+
+        el.innerHTML = `
+          <span class="ctx-icon" aria-hidden="true">${ICONS[item.icon] || ''}</span>
+          <span class="ctx-label">${item.label}</span>
+          ${item.shortcut && !item.children ? `<span class="ctx-shortcut" aria-hidden="true">${item.shortcut}</span>` : ''}
+          ${item.children ? CHEVRON_SVG : ''}
+        `;
+
+        if (item.children) {
+          const subWrap = document.createElement('div');
+          subWrap.className = 'ctx-submenu-wrap';
+          subWrap.appendChild(buildMenu(item.children, item.label + ' submenu'));
+          el.appendChild(subWrap);
+          el.addEventListener('mouseenter', () => {
+            el.setAttribute('aria-expanded', 'true');   // ✅ live state
+            repositionSubmenu(subWrap);
+          });
+          el.addEventListener('mouseleave', () => {
+            el.setAttribute('aria-expanded', 'false');
+          });
+        }
+
+        el.addEventListener('mouseenter', () => {
+          clearFocus(menu);
+          el.classList.add('focused');
+          const frame = focusStack[focusStack.length - 1];
+          if (frame) frame.index = focusable.indexOf(el);
+        });
+
+        el.addEventListener('mouseleave', () => {
+          if (!item.children) el.classList.remove('focused');
+        });
+
+        el.addEventListener('click', () => {
+          if (!item.children && !item.disabled) triggerItem(item.id, item.label);
+        });
+
+        menu.appendChild(el);
+        focusable.push(el);
+      });
+
+      menu._focusable = focusable;
+      return menu;
     }
 
-    function fillTrack(id, items) {
-      const el = document.getElementById(id);
-      el.innerHTML = [...items, ...items].map(buildCard).join('');
+    function repositionSubmenu(subWrap) {
+      subWrap.classList.remove('flip-x', 'flip-y');
+      requestAnimationFrame(() => {
+        const r = subWrap.getBoundingClientRect();
+        if (r.right  > window.innerWidth  - 8) subWrap.classList.add('flip-x');
+        if (r.bottom > window.innerHeight - 8) subWrap.classList.add('flip-y');
+      });
     }
 
-    fillTrack('track-left',  testimonials);
-    fillTrack('track-right', [...testimonials].reverse());
+    // ── State ────────────────────────────────────────────────────────────
+    let activeMenu = null;
+    let focusStack = [];
+
+    function openMenu(x, y) {
+      closeMenu();
+      const menu = buildMenu(MENU);
+      document.body.appendChild(menu);
+      activeMenu = menu;
+
+      menu.style.left = x + 'px';
+      menu.style.top  = y + 'px';
+
+      requestAnimationFrame(() => {
+        const r = menu.getBoundingClientRect();
+        const vw = window.innerWidth, vh = window.innerHeight;
+        if (r.right  > vw - 8) menu.style.left = Math.max(8, x - r.width)  + 'px';
+        if (r.bottom > vh - 8) menu.style.top  = Math.max(8, y - r.height) + 'px';
+      });
+
+      focusStack = [{ menu, index: -1 }];
+      menu.focus();
+    }
+
+    function closeMenu() {
+      activeMenu?.remove();
+      activeMenu = null;
+      focusStack = [];
+    }
+
+    function clearFocus(menu) {
+      menu._focusable?.forEach(el => el.classList.remove('focused', 'submenu-open'));
+    }
+
+    const currentFrame  = () => focusStack[focusStack.length - 1];
+    const focusedEl     = f  => f?.menu._focusable[f.index] ?? null;
+
+    // ── Keyboard ─────────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      if (!activeMenu) return;
+      const frame = currentFrame();
+      if (!frame) return;
+      const items = frame.menu._focusable;
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          clearFocus(frame.menu);
+          frame.index = (frame.index + 1) % items.length;
+          items[frame.index].classList.add('focused');
+          break;
+
+        case 'ArrowUp':
+          e.preventDefault();
+          clearFocus(frame.menu);
+          frame.index = (frame.index - 1 + items.length) % items.length;
+          items[frame.index].classList.add('focused');
+          break;
+
+        case 'ArrowRight': {
+          e.preventDefault();
+          const el = focusedEl(frame);
+          const sub = el?.querySelector('.ctx-submenu-wrap');
+          if (!sub) break;
+          el.classList.add('submenu-open');
+          el.setAttribute('aria-expanded', 'true');
+          repositionSubmenu(sub);
+          const subMenu = sub.querySelector('.ctx-menu');
+          if (subMenu?._focusable?.length) {
+            focusStack.push({ menu: subMenu, index: 0 });
+            subMenu._focusable[0].classList.add('focused');
+          }
+          break;
+        }
+
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (focusStack.length > 1) {
+            const child = focusStack.pop();
+            clearFocus(child.menu);
+            const parentEl = focusedEl(currentFrame());
+            parentEl?.classList.remove('submenu-open');
+            parentEl?.setAttribute('aria-expanded', 'false');
+          }
+          break;
+
+        case 'Enter': {
+          e.preventDefault();
+          const el = focusedEl(frame);
+          const sub = el?.querySelector('.ctx-submenu-wrap');
+          if (sub) {
+            el.classList.add('submenu-open');
+            repositionSubmenu(sub);
+            const subMenu = sub.querySelector('.ctx-menu');
+            if (subMenu?._focusable?.length) {
+              focusStack.push({ menu: subMenu, index: 0 });
+              subMenu._focusable[0].classList.add('focused');
+            }
+          } else {
+            el?.click();
+          }
+          break;
+        }
+
+        case 'Escape':
+          e.preventDefault();
+          if (focusStack.length > 1) {
+            const child = focusStack.pop();
+            clearFocus(child.menu);
+            focusedEl(currentFrame())?.classList.remove('submenu-open');
+          } else {
+            closeMenu();
+          }
+          break;
+      }
+    });
+
+    // ── Toast ─────────────────────────────────────────────────────────────
+    function triggerItem(id, label) {
+      closeMenu();
+      let t = document.getElementById('_toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = '_toast';
+        t.style.cssText = `
+          position:fixed;bottom:36px;left:50%;transform:translateX(-50%);
+          background:rgba(255,255,255,0.12);
+          backdrop-filter:blur(32px) saturate(2);
+          -webkit-backdrop-filter:blur(32px) saturate(2);
+          border:1px solid rgba(255,255,255,0.18);
+          color:rgba(255,255,255,0.9);
+          font-family:Inter,-apple-system,sans-serif;
+          font-size:13px;font-weight:400;
+          padding:9px 20px;border-radius:100px;
+          box-shadow:0 4px 24px rgba(0,0,0,0.35);
+          white-space:nowrap;z-index:9999;pointer-events:none;
+          transition:opacity 0.2s ease;
+        `;
+        document.body.appendChild(t);
+      }
+      t.textContent = `"${label}" selected`;
+      t.style.opacity = '1';
+      clearTimeout(t._t);
+      t._t = setTimeout(() => t.style.opacity = '0', 2200);
+    }
+
+    // ── Background: Canvas 2D radial gradient orbs ───────────────────────
+    (function initBackground() {
+      const canvas = document.getElementById('shader-bg');
+      const ctx    = canvas.getContext('2d');
+
+      function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      // Each orb: normalized center, radius as fraction of max(W,H),
+      // drift speed (sx,sy), phase offset, and RGB color.
+      const orbs = [
+        { cx:0.15, cy:0.20, r:0.65, rgb:[13, 42,200], sx:0.22, sy:0.18, ph:0.0 },
+        { cx:0.80, cy:0.15, r:0.60, rgb:[0, 160,210], sx:0.18, sy:0.24, ph:1.9 },
+        { cx:0.55, cy:0.85, r:0.70, rgb:[8,  50,180], sx:0.20, sy:0.16, ph:3.5 },
+        { cx:0.90, cy:0.70, r:0.55, rgb:[30, 10,140], sx:0.16, sy:0.22, ph:2.3 },
+        { cx:0.25, cy:0.65, r:0.50, rgb:[0, 130,190], sx:0.14, sy:0.20, ph:4.2 },
+      ];
+
+      function draw(ts) {
+        // t advances ~0.3 per second → full sine cycle ≈ 21 s (very slow)
+        const t = ts * 0.0003;
+        const W = canvas.width, H = canvas.height;
+        const M = Math.max(W, H);
+
+        // Dark near-black base
+        ctx.fillStyle = '#060810';
+        ctx.fillRect(0, 0, W, H);
+
+        // Screen blend: overlapping orbs add light, never blow out
+        ctx.globalCompositeOperation = 'screen';
+
+        orbs.forEach(o => {
+          // Drift position using independent sine/cosine per axis
+          const x = (o.cx + Math.sin(t * o.sx + o.ph)       * 0.38) * W;
+          const y = (o.cy + Math.cos(t * o.sy + o.ph + 1.2) * 0.32) * H;
+          const r = o.r * M;
+
+          const [rr, gg, bb] = o.rgb;
+          const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+          grad.addColorStop(0,    `rgba(${rr},${gg},${bb},0.22)`);
+          grad.addColorStop(0.35, `rgba(${rr},${gg},${bb},0.10)`);
+          grad.addColorStop(0.70, `rgba(${rr},${gg},${bb},0.03)`);
+          grad.addColorStop(1,    `rgba(${rr},${gg},${bb},0.00)`);
+
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, W, H);
+        });
+
+        ctx.globalCompositeOperation = 'source-over';
+        requestAnimationFrame(draw);
+      }
+
+      requestAnimationFrame(draw);
+    })();
+
+    // ── Events ────────────────────────────────────────────────────────────
+    document.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      openMenu(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('mousedown', e => {
+      if (activeMenu && !activeMenu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keyup', e => {
+      if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) {
+        openMenu(window.innerWidth / 2, window.innerHeight / 2);
+      }
+    });
   </script>
 
 </body>
